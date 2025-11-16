@@ -2,102 +2,85 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Dewey International University Enrollment Form</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1"
+    />
+    <title>Student Enrollment App</title>
+    <meta name="theme-color" content="#2196f3" />
+    <link rel="manifest" href="manifest.json" />
 
     <style>
       body {
         font-family: Arial, sans-serif;
-        background: #f4f4f4;
-        padding: 20px;
+        margin: 0;
+        padding: 15px;
+        background: #f2f2f2;
       }
 
-      .form-container {
-        width: 600px;
+      .container {
+        width: 100%;
+        max-width: 450px;
+        margin: auto;
         background: #fff;
         padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-        margin: auto;
+        border-radius: 12px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
       }
 
-      .header {
+      h2 {
         text-align: center;
         margin-bottom: 20px;
-      }
-
-      .header h1 {
-        font-size: 22px;
-        margin: 0;
-        color: #333;
+        color: #2196f3;
       }
 
       label {
-        display: block;
-        margin-top: 10px;
         font-weight: bold;
+        display: block;
+        margin-top: 15px;
       }
 
       input,
       select,
       textarea {
         width: 100%;
-        padding: 8px;
+        padding: 12px;
         margin-top: 5px;
         border: 1px solid #ccc;
-        border-radius: 5px;
+        border-radius: 8px;
+        font-size: 16px;
+        box-sizing: border-box;
       }
 
       button {
         width: 100%;
-        margin-top: 15px;
-        padding: 12px;
-        background: #4caf50;
-        color: white;
+        margin-top: 20px;
+        padding: 15px;
+        background: #2196f3;
         border: none;
-        border-radius: 5px;
+        color: white;
+        font-size: 18px;
+        border-radius: 10px;
         cursor: pointer;
-        font-size: 16px;
       }
 
       button:hover {
-        background: #45a049;
+        background: #0b7dda;
       }
 
       #result {
         margin-top: 20px;
         padding: 15px;
         background: #dff0d8;
-        border-radius: 5px;
+        border-radius: 8px;
         display: none;
-      }
-
-      @media (max-width: 480px) {
-        .form-container {
-          width: 100%;
-          padding: 15px;
-          border-radius: 0;
-        }
-        body {
-          padding: 10px;
-        }
-        input,
-        select,
-        textarea {
-          font-size: 16px;
-        }
-        button {
-          font-size: 18px;
-          padding: 12px;
-        }
       }
     </style>
   </head>
+
   <body>
-    <div class="form-container">
-      <div class="header">
-        <h1>Dewey International University</h1>
-      </div>
+    <div class="container">
+      <h2>Student Enrollment Form</h2>
 
       <label>Full Name</label>
       <input type="text" id="name" />
@@ -111,14 +94,14 @@
       <label>Gender</label>
       <select id="gender">
         <option value="">Select</option>
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
+        <option>Male</option>
+        <option>Female</option>
       </select>
 
       <label>Nationality</label>
       <input type="text" id="nationality" />
 
-      <label>Year</label>
+      <label>Year / Class</label>
       <input type="text" id="class" />
 
       <label>Job / Occupation (optional)</label>
@@ -131,17 +114,23 @@
       <input type="text" id="contact" />
 
       <label>Address</label>
-      <textarea id="address"></textarea>
+      <textarea id="address" rows="3"></textarea>
 
-      <button onclick="submitForm()">Submit</button>
+      <label>Date of Enrollment</label>
+      <input type="date" id="enrollDate" value="<?php echo date('Y-m-d'); ?>" />
+
+      <button id="submitBtn">Submit & Generate PDF</button>
 
       <div id="result"></div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
+      const submitBtn = document.getElementById("submitBtn");
+      const resultDiv = document.getElementById("result");
       let currentStudent = {};
 
-      function submitForm() {
+      submitBtn.addEventListener("click", function () {
         const name = document.getElementById("name").value;
         const dob = document.getElementById("dob").value;
         const age = document.getElementById("age").value;
@@ -152,6 +141,7 @@
         const parent = document.getElementById("parent").value;
         const contact = document.getElementById("contact").value;
         const address = document.getElementById("address").value;
+        const dateEnrolled = document.getElementById("enrollDate").value;
 
         if (
           !name ||
@@ -162,7 +152,8 @@
           !className ||
           !parent ||
           !contact ||
-          !address
+          !address ||
+          !dateEnrolled
         ) {
           alert("Please fill out all required fields!");
           return;
@@ -179,88 +170,108 @@
           parent,
           contact,
           address,
-          dateEnrolled: new Date().toLocaleDateString(),
+          dateEnrolled,
         };
 
-        document.getElementById("result").style.display = "block";
-        document.getElementById("result").innerHTML = `
+        resultDiv.style.display = "block";
+        resultDiv.innerHTML = `
         <h3>Student Info Submitted</h3>
         <p><strong>Name:</strong> ${name}</p>
         <p><strong>Date of Birth:</strong> ${dob}</p>
         <p><strong>Age:</strong> ${age}</p>
         <p><strong>Gender:</strong> ${gender}</p>
         <p><strong>Nationality:</strong> ${nationality}</p>
-        <p><strong>Class / Grade:</strong> ${className}</p>
+        <p><strong>Class / Year:</strong> ${className}</p>
         <p><strong>Job:</strong> ${job}</p>
         <p><strong>Parent / Guardian:</strong> ${parent}</p>
         <p><strong>Contact:</strong> ${contact}</p>
         <p><strong>Address:</strong> ${address}</p>
-        <p><strong>Date of Enrollment:</strong> ${currentStudent.dateEnrolled}</p>
-        <button onclick="downloadPDF()">Save as PDF</button>
+        <p><strong>Date of Enrollment:</strong> ${dateEnrolled}</p>
+        <button id="downloadBtn">Download PDF</button>
       `;
-      }
 
-      function downloadPDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
+        document
+          .getElementById("downloadBtn")
+          .addEventListener("click", function () {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            let startY = 20;
+            const lineHeight = 10;
 
-        const {
-          name,
-          dob,
-          age,
-          gender,
-          nationality,
-          className,
-          job,
-          parent,
-          contact,
-          address,
-          dateEnrolled,
-        } = currentStudent;
+            doc.setFontSize(16);
+            doc.text("Dewey International University", 105, startY, {
+              align: "center",
+            });
+            startY += 15;
 
-        // Border
-        doc.setLineWidth(0.5);
-        doc.rect(5, 5, 200, 287);
+            doc.setFontSize(12);
+            doc.text(`Name: ${currentStudent.name}`, 15, startY);
+            doc.text(
+              `Date of Birth: ${currentStudent.dob}`,
+              15,
+              startY + lineHeight
+            );
+            doc.text(`Age: ${currentStudent.age}`, 15, startY + lineHeight * 2);
+            doc.text(
+              `Gender: ${currentStudent.gender}`,
+              15,
+              startY + lineHeight * 3
+            );
+            doc.text(
+              `Nationality: ${currentStudent.nationality}`,
+              15,
+              startY + lineHeight * 4
+            );
+            doc.text(
+              `Class / Year: ${currentStudent.className}`,
+              15,
+              startY + lineHeight * 5
+            );
+            doc.text(
+              `Job / Occupation: ${currentStudent.job}`,
+              15,
+              startY + lineHeight * 6
+            );
+            doc.text(
+              `Parent / Guardian: ${currentStudent.parent}`,
+              15,
+              startY + lineHeight * 7
+            );
+            doc.text(
+              `Contact: ${currentStudent.contact}`,
+              15,
+              startY + lineHeight * 8
+            );
+            doc.text(
+              `Address: ${currentStudent.address}`,
+              15,
+              startY + lineHeight * 9
+            );
+            doc.text(
+              `Date of Enrollment: ${currentStudent.dateEnrolled}`,
+              15,
+              startY + lineHeight * 10
+            );
 
-        // Header Title
-        doc.setFontSize(16);
-        doc.text("Dewey International University", 105, 20, {
-          align: "center",
-        });
+            const pageWidth = doc.internal.pageSize.getWidth();
+            doc.setFontSize(10);
+            doc.text(
+              "Your data is safe with us. We respect your privacy.",
+              pageWidth / 2,
+              280,
+              { align: "center" }
+            );
+            doc.text(
+              "© 2025 Thi Chhean. All rights reserved.",
+              pageWidth / 2,
+              290,
+              { align: "center" }
+            );
 
-        // Body Content
-        let startY = 40;
-        const lineHeight = 10;
-
-        doc.text(`Name: ${name}`, 15, startY);
-        doc.text(`Date of Birth: ${dob}`, 15, startY + lineHeight);
-        doc.text(`Age: ${age}`, 15, startY + lineHeight * 2);
-        doc.text(`Gender: ${gender}`, 15, startY + lineHeight * 3);
-        doc.text(`Nationality: ${nationality}`, 15, startY + lineHeight * 4);
-        doc.text(`Year: ${className}`, 15, startY + lineHeight * 5);
-        doc.text(`Job / Occupation: ${job}`, 15, startY + lineHeight * 6);
-        doc.text(`Parent / Guardian: ${parent}`, 15, startY + lineHeight * 7);
-        doc.text(`Contact: ${contact}`, 15, startY + lineHeight * 8);
-        doc.text(`Address: ${address}`, 15, startY + lineHeight * 9);
-
-        // ⭐ NEW: Date of Enrollment moved below Address
-        doc.text(
-          `Date of Enrollment: ${dateEnrolled}`,
-          15,
-          startY + lineHeight * 10
-        );
-
-        // Footer
-        const footer1 = "Your data is safe with us. We respect your privacy.";
-        const footer2 = "© 2025 Thi Chhean. All rights reserved.";
-        let pageWidth = doc.internal.pageSize.getWidth();
-
-        doc.setFontSize(10);
-        doc.text(footer1, pageWidth / 2, 280, { align: "center" });
-        doc.text(footer2, pageWidth / 2, 290, { align: "center" });
-
-        doc.save("student_enrollment.pdf");
-      }
+            // Use blob URL for mobile compatibility
+            doc.output("bloburl");
+          });
+      });
     </script>
   </body>
 </html>
